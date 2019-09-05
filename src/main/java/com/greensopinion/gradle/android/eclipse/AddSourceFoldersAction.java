@@ -26,6 +26,7 @@ public class AddSourceFoldersAction implements Action<Classpath> {
 		Log.log().info("Adding Android source folders");
 		classpath.getEntries().add(new SourceFolder("src/main/java", "bin"));
 		classpath.getEntries().add(new SourceFolder("build/generated/source/r/debug", "bin"));
+		classpath.getEntries().add(new SourceFolder("build/generated/not_namespaced_r_class_sources/debug/r", "bin"));
 		classpath.getEntries().add(new SourceFolder("build/generated/source/buildConfig/debug", "bin"));
 		classpath.getEntries().add(new SourceFolder("build/generated/source/aidl/debug", "bin"));
 	}
