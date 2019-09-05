@@ -15,6 +15,7 @@ This plug-in hooks into the [Gradle eclipse plugin](https://docs.gradle.org/curr
  * Adds the following Android source paths:
     * `src/main/java`
     * `build/generated/source/r/debug`
+    * `build/generated/not_namespaced_r_class_sources/debug/r`
     * `build/generated/source/buildConfig/debug`
     * `build/generated/source/aidl/debug`
  * For any dependency packaged as an aar ([Android Archive](https://developer.android.com/studio/projects/android-library.html)), the aar is extracted into `build/exploded-aars`
@@ -29,23 +30,29 @@ Add the following to your build.gradle:
     apply plugin: 'com.greensopinion.gradle-android-eclipse'
     apply plugin: 'eclipse'
 
-	buildscript {
-	    repositories {
-	        maven {
-	          url "https://plugins.gradle.org/m2/"
-	        }
-	    }
-	    dependencies {
-	      classpath "gradle.plugin.com.greensopinion.gradle-android-eclipse:gradle-android-eclipse:1.1"
-	    }
-	}
+    buildscript {
+        dependencies {
+            classpath fileTree(dir: 'libs', includes: ['gradle-android-eclipse-1.1.1.jar'])
+        }
+    }
 
-	eclipse {
-	  classpath {
-	    plusConfigurations += [ configurations.compile, configurations.testCompile ]
-	    downloadSources = true
-	  }
-	}
+    // https://github.com/greensopinion/gradle-android-eclipse/issues/9
+    configurations {
+        eclipseConfig.extendsFrom implementation
+        eclipseTestConfig.extendsFrom testImplementation
+    }
+
+    eclipse {
+      classpath {
+        plusConfigurations += [
+          configurations.compile,
+          configurations.testCompile,
+          configurations.eclipseConfig,
+          configurations.eclipseTestConfig,
+        ]
+        downloadSources = true
+      }
+    }
 
 See [build.gradle](https://github.com/greensopinion/gradle-android-eclipse/blob/master/src/test/SampleApplication/app/build.gradle) for a complete working example.
 
