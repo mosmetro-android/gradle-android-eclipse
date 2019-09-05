@@ -21,7 +21,7 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.plugins.ide.eclipse.model.Classpath;
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry;
-import org.gradle.plugins.ide.eclipse.model.Variable;
+import org.gradle.plugins.ide.eclipse.model.Library;
 import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory;
 
 public class AndroidSdkLibraryDependenciesAction implements Action<Classpath> {
@@ -39,20 +39,22 @@ public class AndroidSdkLibraryDependenciesAction implements Action<Classpath> {
 
 	private ClasspathEntry androidSdkEntry() {
 		FileReferenceFactory fileReferenceFactory = new FileReferenceFactory();
-		Object compileSdkVersion = compileSdkVersion();
-		Variable variable = new Variable(
-				fileReferenceFactory.fromPath("ANDROID_HOME/platforms/" + compileSdkVersion + "/android.jar"));
-		variable.setSourcePath(fileReferenceFactory.fromPath("ANDROID_HOME/sources/" + compileSdkVersion));
-		return variable;
+		Object compileSdkVersion = getAndroidProperty("compileSdkVersion");
+		Object sdkDirectory = getAndroidProperty("sdkDirectory");
+		Library library = new Library(
+				fileReferenceFactory.fromPath(sdkDirectory + "/platforms/" + compileSdkVersion + "/android.jar"));
+		library.setSourcePath(fileReferenceFactory.fromPath(sdkDirectory + "/sources/" + compileSdkVersion));
+		return library;
 	}
 
-	private Object compileSdkVersion() {
+	private Object getAndroidProperty(String key) {
 		Object android = project.property("android");
+		String getter = "get" + key.substring(0, 1).toUpperCase() + key.substring(1);
 		try {
-			return android.getClass().getMethod("getCompileSdkVersion").invoke(android);
+			return android.getClass().getMethod(getter).invoke(android);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
-			throw new RuntimeException("Cannot get 'compileSdkVersion' property of 'android'.", e);
+			throw new RuntimeException("Cannot get '" + key + "' property of 'android'.", e);
 		}
 	}
 }
